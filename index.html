@@ -694,7 +694,7 @@ const layerDefinitions = [
   ['07_posts_100x100', 'Стойки 100×100', '#c07a43'],
   ['08_upper_frame_100x100', 'Верхняя обвязка', '#a96639'],
   ['09_wall_braces_50x100', 'Укосины 50×100', '#d0915c'],
-  ['10_mid_rails_50x100', 'Перемычки стен', '#d5a06e'],
+  ['10_mid_rails_50x100', 'Горизонтальная обшивка', '#d5a06e'],
   ['11_roof_rafters_50x150', 'Стропила 50×150', '#a76537'],
   ['12_roof_battens', 'Обрешётка', '#d1a377'],
   ['13_roof_sheet', 'Профнастил', '#285e72'],
@@ -733,6 +733,7 @@ const blockPositions = [
 
 const selectableMeshes = [];
 const foundationMeshes = [];
+const wallCladdingMeshes = [];
 
 function registerMesh(layerId, mesh, info = {}) {
   mesh.castShadow = info.castShadow !== false;
@@ -975,6 +976,58 @@ function addBrace(name, a, b, fromA = true) {
   });
 }
 
+function addHorizontalWallBoards(name, a, b, options) {
+  const {
+    boardHeight,
+    gap,
+    maxZ,
+    followRoof = false,
+    depth = 24,
+  } = options;
+  const wallLength = a.distanceTo(b);
+  const insetT = 60 / wallLength;
+  const wallBottom = 540;
+  const roofClearance = 90;
+  const roofAtA = roofZ(a.x, a.y) - roofClearance;
+  const roofAtB = roofZ(b.x, b.y) - roofClearance;
+  const highestTop = followRoof ? Math.max(roofAtA, roofAtB) : maxZ;
+  let row = 0;
+
+  for (let bottom = wallBottom; bottom + boardHeight <= highestTop; bottom += boardHeight + gap) {
+    const centerZ = bottom + boardHeight / 2;
+    const boardTop = bottom + boardHeight;
+    let startT = insetT;
+    let endT = 1 - insetT;
+
+    if (followRoof) {
+      const roofDelta = roofAtB - roofAtA;
+      if (Math.abs(roofDelta) < 1e-6 && boardTop > roofAtA) continue;
+      if (roofDelta > 0 && boardTop > roofAtA) {
+        startT = Math.max(startT, (boardTop - roofAtA) / roofDelta);
+      } else if (roofDelta < 0 && boardTop > roofAtB) {
+        endT = Math.min(endT, 1 - (boardTop - roofAtB) / -roofDelta);
+      }
+    }
+
+    if (startT >= endT) continue;
+    row += 1;
+    const board = beamBetween(
+      '10_mid_rails_50x100',
+      `${name} · рейка ${row}`,
+      pointAlong(a, b, startT, centerZ),
+      pointAlong(a, b, endT, centerZ),
+      depth,
+      boardHeight,
+      materials.wood,
+      { section: `${depth}×${boardHeight} мм` }
+    );
+    board.userData.wall = name;
+    board.userData.horizontalSlat = true;
+    board.userData.hasGap = gap > 0;
+    wallCladdingMeshes.push(board);
+  }
+}
+
 function addWallFraming() {
   addBrace('Укосина A–B · левая', points.A, points.B, true);
   addBrace('Укосина A–B · правая', points.A, points.B, false);
@@ -983,18 +1036,25 @@ function addWallFraming() {
   addBrace('Укосина B–C', points.B, points.C, true);
   addBrace('Укосина D–E', points.D, points.E, true);
 
-  const railZ = 1540;
-  [['A', 'B'], ['A', 'E'], ['B', 'C'], ['D', 'E']].forEach(([a, b]) => {
-    beamBetween(
-      '10_mid_rails_50x100',
-      `Перемычка ${a}–${b}`,
-      points[a].clone().setZ(railZ),
-      points[b].clone().setZ(railZ),
-      50,
-      100,
-      materials.wood,
-      { section: '50×100 мм' }
-    );
+  addHorizontalWallBoards('Сплошная стена A–B', points.A, points.B, {
+    boardHeight: 110,
+    gap: 0,
+    followRoof: true,
+  });
+  addHorizontalWallBoards('Сплошная стена A–E', points.A, points.E, {
+    boardHeight: 110,
+    gap: 0,
+    followRoof: true,
+  });
+  addHorizontalWallBoards('Решётчатая стена B–C', points.B, points.C, {
+    boardHeight: 90,
+    gap: 55,
+    maxZ: 1510,
+  });
+  addHorizontalWallBoards('Решётчатая стена D–E', points.D, points.E, {
+    boardHeight: 90,
+    gap: 55,
+    maxZ: 1510,
   });
 }
 
@@ -1383,7 +1443,7 @@ function runChecks() {
     ['Вход C–D открыт, длина около 1414 мм', Math.abs(cdLength - Math.sqrt(2_000_000)) < 1],
     ['Нижняя точка крыши находится у угла A', postTop(points.A) < postTop(points.B) && postTop(points.A) < postTop(points.E)],
     ['Верхняя линия крыши находится над входом C–D', postTop(points.C) === 3340 && postTop(points.D) === 3340],
-    ['Центрального столба внутри нет', !selectableMeshes.some((m) => m.name.includes('Центральная стойка'))],
+    ['Все рейки стен расположены горизонтально', wallCladdingMeshes.length > 0 && wallCladdingMeshes.every((mesh) => mesh.userData.horizontalSlat)],
   ];
   console.group('Проверки модели беседки');
   checks.forEach(([label, passed], i) => console.log(`${passed ? '✓' : '✗'} ${i + 1}. ${label}`));
