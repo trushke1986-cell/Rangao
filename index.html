@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Угловая беседка — 3D-модель</title>
+  <meta name="description" content="Интерактивная техническая 3D-модель деревянной угловой беседки в масштабе 1:1.">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
+  <style>
+:root {
+  color-scheme: light;
+  --surface: #f7f8f5;
+  --surface-strong: #ffffff;
+  --canvas: #e8ece8;
+  --ink: #202522;
+  --muted: #68716b;
+  --line: #d5dbd5;
+  --accent: #d85c42;
+  --accent-soft: #f5ddd7;
+  --roof: #2d6072;
+  --wood: #b8743f;
+  --concrete: #808985;
+  --shadow: 0 10px 30px rgba(34, 42, 37, 0.1);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button,
+select {
+  letter-spacing: 0;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 322px minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar {
+  position: relative;
+  z-index: 4;
+  min-width: 0;
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 8px 0 26px rgba(31, 40, 34, 0.05);
+}
+
+.project-header,
+.stage-band,
+.layers-band,
+.inspect-band,
+.explode-band {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.project-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 22px;
+  background: var(--surface-strong);
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  letter-spacing: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.check-badge {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding: 6px 8px;
+  border: 1px solid #a7c8b5;
+  border-radius: 6px;
+  background: #e7f2eb;
+  color: #2d6848;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-heading > span,
+.section-heading output {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stage-control {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  gap: 7px;
+}
+
+select {
+  width: 100%;
+  height: 36px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.icon-button,
+.text-button,
+.view-button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.icon-button.small {
+  width: 30px;
+  height: 30px;
+}
+
+.icon-button svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.icon-button:hover,
+.text-button:hover,
+.view-button:hover {
+  border-color: #aeb7b0;
+  background: #f0f3ef;
+}
+
+.icon-button:focus-visible,
+.text-button:focus-visible,
+.view-button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.text-button {
+  padding: 4px 8px;
+  color: var(--roof);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.layer-list {
+  display: grid;
+  gap: 2px;
+}
+
+.layer-row {
+  display: grid;
+  grid-template-columns: 18px 11px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+  padding: 4px 3px;
+  color: #333a36;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.layer-row:hover {
+  background: #eef1ed;
+}
+
+.layer-row input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.layer-swatch {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 2px;
+  background: var(--swatch);
+}
+
+.layer-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selection-empty {
+  min-height: 42px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.selection-data {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.selection-data div {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.selection-data dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.selection-data dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.explode-band input[type="range"] {
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--canvas);
+}
+
+#modelCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.viewer-toolbar,
+.model-status {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(157, 168, 159, 0.7);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.viewer-toolbar {
+  top: 18px;
+  left: 18px;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px;
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
+  background: #e9ede8;
+}
+
+.view-button {
+  height: 30px;
+  padding: 0 12px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.view-button.active {
+  border-color: var(--line);
+  background: var(--surface-strong);
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(30, 40, 34, 0.08);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.model-status {
+  right: 18px;
+  bottom: 18px;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  color: #465049;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #459567;
+  box-shadow: 0 0 0 3px rgba(69, 149, 103, 0.15);
+}
+
+.loading-state {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--canvas);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  transition: opacity 180ms ease;
+}
+
+.loading-state.hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.loading-mark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #b7c0b9;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(330px, 58vh) minmax(0, 42vh);
+  }
+
+  .viewport {
+    grid-row: 1;
+  }
+
+  .sidebar {
+    grid-row: 2;
+    border-top: 1px solid var(--line);
+    border-right: 0;
+    box-shadow: 0 -8px 26px rgba(31, 40, 34, 0.06);
+  }
+
+  .project-header,
+  .stage-band,
+  .layers-band,
+  .inspect-band,
+  .explode-band {
+    padding: 13px 16px;
+  }
+
+  .project-header {
+    padding-top: 14px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  .viewer-toolbar {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .model-status {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .view-button {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 430px) {
+  .viewer-toolbar {
+    gap: 6px;
+  }
+
+  .view-button {
+    font-size: 10px;
+    padding: 0 7px;
+  }
+
+  .toolbar-actions .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+</style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Параметры модели">
+      <header class="project-header">
+        <div>
+          <p class="eyebrow">Модель 1:1 · миллиметры</p>
+          <h1>Угловая беседка</h1>
+        </div>
+        <span class="check-badge" id="checkBadge">0/8</span>
+      </header>
+
+      <section class="stage-band" aria-labelledby="stageTitle">
+        <div class="section-heading">
+          <h2 id="stageTitle">Этап строительства</h2>
+          <span id="stageCounter">08 / 08</span>
+        </div>
+        <div class="stage-control">
+          <button class="icon-button" id="prevStage" type="button" title="Предыдущий этап" aria-label="Предыдущий этап">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <select id="stageSelect" aria-label="Этап строительства"></select>
+          <button class="icon-button" id="nextStage" type="button" title="Следующий этап" aria-label="Следующий этап">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="layers-band" aria-labelledby="layersTitle">
+        <div class="section-heading">
+          <h2 id="layersTitle">Слои модели</h2>
+          <button class="text-button" id="showAllLayers" type="button">Все</button>
+        </div>
+        <div class="layer-list" id="layerList"></div>
+      </section>
+
+      <section class="inspect-band" aria-labelledby="inspectTitle">
+        <div class="section-heading">
+          <h2 id="inspectTitle">Выбранный элемент</h2>
+          <button class="icon-button small" id="focusSelected" type="button" title="Приблизить выбранное" aria-label="Приблизить выбранное" disabled>
+            <i data-lucide="scan"></i>
+          </button>
+        </div>
+        <div class="selection-empty" id="selectionEmpty">Элемент не выбран</div>
+        <dl class="selection-data" id="selectionData" hidden>
+          <div><dt>Название</dt><dd id="selectionName"></dd></div>
+          <div><dt>Слой</dt><dd id="selectionLayer"></dd></div>
+          <div><dt>Сечение</dt><dd id="selectionSection"></dd></div>
+          <div><dt>Длина</dt><dd id="selectionLength"></dd></div>
+        </dl>
+      </section>
+
+      <section class="explode-band" aria-labelledby="explodeTitle">
+        <div class="section-heading">
+          <h2 id="explodeTitle">Разнесение конструкции</h2>
+          <output id="explodeValue">0%</output>
+        </div>
+        <input id="explodeRange" type="range" min="0" max="100" value="0" step="1" aria-label="Разнесение конструкции">
+      </section>
+    </aside>
+
+    <main class="viewport" id="viewport">
+      <div class="viewer-toolbar" role="toolbar" aria-label="Виды камеры">
+        <div class="segmented-control" id="viewButtons">
+          <button class="view-button active" type="button" data-view="iso">3D</button>
+          <button class="view-button" type="button" data-view="top">Сверху</button>
+          <button class="view-button" type="button" data-view="front">Фасад</button>
+        </div>
+        <div class="toolbar-actions">
+          <button class="icon-button" id="fitModel" type="button" title="Показать всю модель" aria-label="Показать всю модель">
+            <i data-lucide="maximize"></i>
+          </button>
+          <button class="icon-button" id="resetView" type="button" title="Исходный вид" aria-label="Исходный вид">
+            <i data-lucide="home"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="model-status">
+        <span class="status-dot"></span>
+        <span id="modelStatus">Полная модель</span>
+      </div>
+
+      <div class="loading-state" id="loadingState">
+        <span class="loading-mark"></span>
+        <span>Сборка модели</span>
+      </div>
+
+      <canvas id="modelCanvas" aria-label="Интерактивная 3D-модель беседки"></canvas>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
+
+const canvas = document.querySelector('#modelCanvas');
+const viewport = document.querySelector('#viewport');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe8ece8);
+scene.fog = new THREE.Fog(0xe8ece8, 8500, 15500);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const camera = new THREE.PerspectiveCamera(39, 1, 5, 30000);
+camera.up.set(0, 0, 1);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.075;
+controls.minDistance = 900;
+controls.maxDistance = 13000;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.screenSpacePanning = true;
+
+const INITIAL_CAMERA = new THREE.Vector3(5600, -6200, 4300);
+const INITIAL_TARGET = new THREE.Vector3(1450, 1450, 1300);
+camera.position.copy(INITIAL_CAMERA);
+controls.target.copy(INITIAL_TARGET);
+
+scene.add(new THREE.HemisphereLight(0xf4f6f1, 0x6e766f, 2.1));
+const sun = new THREE.DirectionalLight(0xfff3df, 3.2);
+sun.position.set(-3200, -4800, 7600);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -5500;
+sun.shadow.camera.right = 5500;
+sun.shadow.camera.top = 5500;
+sun.shadow.camera.bottom = -5500;
+sun.shadow.camera.near = 100;
+sun.shadow.camera.far = 14000;
+scene.add(sun);
+
+const floorPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(12000, 12000),
+  new THREE.MeshStandardMaterial({ color: 0xdde3dd, roughness: 0.96, metalness: 0 })
+);
+floorPlane.receiveShadow = true;
+floorPlane.position.set(1500, 1500, -4);
+floorPlane.userData.raycastIgnore = true;
+scene.add(floorPlane);
+
+const grid = new THREE.GridHelper(7000, 14, 0xaab4ac, 0xcbd2cc);
+grid.rotation.x = Math.PI / 2;
+grid.position.set(1500, 1500, 1);
+grid.material.transparent = true;
+grid.material.opacity = 0.48;
+grid.userData.raycastIgnore = true;
+scene.add(grid);
+
+function makeWoodTexture() {
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#c88a52';
+  ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 44; i += 1) {
+    const y = (i * 37) % 256;
+    ctx.strokeStyle = i % 4 === 0 ? 'rgba(83,43,18,.20)' : 'rgba(255,233,196,.14)';
+    ctx.lineWidth = i % 5 === 0 ? 2 : 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.bezierCurveTo(70, y + 7, 170, y - 9, 256, y + 2);
+    ctx.stroke();
+  }
+  const texture = new THREE.CanvasTexture(c);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 2);
+  return texture;
+}
+
+const woodTexture = makeWoodTexture();
+const materials = {
+  concrete: new THREE.MeshStandardMaterial({ color: 0x7c8581, roughness: 0.95 }),
+  rubber: new THREE.MeshStandardMaterial({ color: 0x181b1a, roughness: 0.88 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xc08049, map: woodTexture, roughness: 0.72 }),
+  woodDark: new THREE.MeshStandardMaterial({ color: 0xa96739, map: woodTexture, roughness: 0.76 }),
+  floor: new THREE.MeshStandardMaterial({ color: 0xc9915d, map: woodTexture, roughness: 0.68 }),
+  roof: new THREE.MeshStandardMaterial({ color: 0x285e72, roughness: 0.5, metalness: 0.35, side: THREE.DoubleSide }),
+  fence: new THREE.MeshStandardMaterial({ color: 0x536661, roughness: 0.66, metalness: 0.24, transparent: true, opacity: 0.42 }),
+};
+
+const layerDefinitions = [
+  ['01_foundation_blocks', 'Фундаментные блоки', '#7c8581'],
+  ['02_waterproofing', 'Гидроизоляция', '#181b1a'],
+  ['03_lower_frame_150x150', 'Нижняя обвязка 150×150', '#bd7842'],
+  ['04_central_floor_beam_2x50x150', 'Центральный прогон', '#9f6136'],
+  ['05_floor_joists_50x150', 'Лаги пола 50×150', '#b87542'],
+  ['06_floor_deck_40', 'Настил пола 40', '#ce985f'],
+  ['07_posts_100x100', 'Стойки 100×100', '#c07a43'],
+  ['08_upper_frame_100x100', 'Верхняя обвязка', '#a96639'],
+  ['09_wall_braces_50x100', 'Укосины 50×100', '#d0915c'],
+  ['10_mid_rails_50x100', 'Перемычки стен', '#d5a06e'],
+  ['11_roof_rafters_50x150', 'Стропила 50×150', '#a76537'],
+  ['12_roof_battens', 'Обрешётка', '#d1a377'],
+  ['13_roof_sheet', 'Профнастил', '#285e72'],
+  ['14_labels_dimensions', 'Подписи и размеры', '#d85c42'],
+];
+
+const layerGroups = new Map();
+const layerMeta = new Map();
+layerDefinitions.forEach(([id, label, color], index) => {
+  const group = new THREE.Group();
+  group.name = id;
+  group.userData.layerIndex = index;
+  scene.add(group);
+  layerGroups.set(id, group);
+  layerMeta.set(id, { label, color, index });
+});
+
+const contextGroup = new THREE.Group();
+contextGroup.name = 'context';
+scene.add(contextGroup);
+
+const points = {
+  A: new THREE.Vector3(0, 0, 0),
+  B: new THREE.Vector3(3000, 0, 0),
+  C: new THREE.Vector3(3000, 2000, 0),
+  D: new THREE.Vector3(2000, 3000, 0),
+  E: new THREE.Vector3(0, 3000, 0),
+};
+
+const blockPositions = [
+  ['A', 0, 0, 0], ['B', 3000, 0, 0], ['C', 3000, 2000, Math.PI / 2],
+  ['D', 2000, 3000, 0], ['E', 0, 3000, 0], ['AB', 1500, 0, 0],
+  ['AE', 0, 1500, Math.PI / 2], ['F', 1500, 3000, 0],
+  ['P1', 1500, 1000, Math.PI / 2], ['P2', 1500, 2150, Math.PI / 2],
+];
+
+const selectableMeshes = [];
+const foundationMeshes = [];
+
+function registerMesh(layerId, mesh, info = {}) {
+  mesh.castShadow = info.castShadow !== false;
+  mesh.receiveShadow = info.receiveShadow !== false;
+  mesh.userData = {
+    ...mesh.userData,
+    selectable: info.selectable !== false,
+    layerId,
+    displayName: info.name || mesh.name || 'Элемент',
+    section: info.section || '—',
+    length: info.length || null,
+  };
+  layerGroups.get(layerId).add(mesh);
+  if (mesh.userData.selectable) selectableMeshes.push(mesh);
+  return mesh;
+}
+
+function boxElement(layerId, name, size, position, material, info = {}) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), material);
+  mesh.name = name;
+  mesh.position.copy(position);
+  if (info.rotationZ) mesh.rotation.z = info.rotationZ;
+  return registerMesh(layerId, mesh, { name, ...info });
+}
+
+function beamBetween(layerId, name, start, end, width, height, material, info = {}) {
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const length = direction.length();
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(length, width, height), material);
+  mesh.name = name;
+  mesh.position.copy(start).add(end).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction.clone().normalize());
+  return registerMesh(layerId, mesh, {
+    name,
+    section: `${width}×${height} мм`,
+    length,
+    ...info,
+  });
+}
+
+const roofPlan = [
+  new THREE.Vector2(-150, -150),
+  new THREE.Vector2(3150, -150),
+  new THREE.Vector2(3150, 2062),
+  new THREE.Vector2(2062, 3150),
+  new THREE.Vector2(-150, 3150),
+];
+
+function roofZ(x, y) {
+  return 2740 + 0.12 * (x + y);
+}
+
+function postTop(point) {
+  return roofZ(point.x, point.y);
+}
+
+function cross2(a, b) {
+  return a.x * b.y - a.y * b.x;
+}
+
+function clipLineToRoof(point, direction) {
+  const hits = [];
+  for (let i = 0; i < roofPlan.length; i += 1) {
+    const a = roofPlan[i];
+    const b = roofPlan[(i + 1) % roofPlan.length];
+    const edge = b.clone().sub(a);
+    const delta = a.clone().sub(point);
+    const denominator = cross2(direction, edge);
+    if (Math.abs(denominator) < 1e-7) continue;
+    const t = cross2(delta, edge) / denominator;
+    const u = cross2(delta, direction) / denominator;
+    if (u >= -1e-6 && u <= 1 + 1e-6) hits.push(t);
+  }
+  const unique = [...new Set(hits.map((value) => value.toFixed(5)))].map(Number).sort((a, b) => a - b);
+  if (unique.length < 2) return null;
+  return [
+    point.clone().addScaledVector(direction, unique[0]),
+    point.clone().addScaledVector(direction, unique[unique.length - 1]),
+  ];
+}
+
+function addFoundation() {
+  for (const [id, x, y, rotationZ] of blockPositions) {
+    const block = boxElement(
+      '01_foundation_blocks',
+      `Блок ${id}`,
+      new THREE.Vector3(400, 200, 200),
+      new THREE.Vector3(x, y, 100),
+      materials.concrete,
+      { section: '200×200×400 мм', length: 400, rotationZ }
+    );
+    foundationMeshes.push(block);
+
+    for (let layer = 0; layer < 2; layer += 1) {
+      boxElement(
+        '02_waterproofing',
+        `Рубероид ${id} · слой ${layer + 1}`,
+        new THREE.Vector3(410, 210, 5),
+        new THREE.Vector3(x, y, 202.5 + layer * 6),
+        materials.rubber,
+        { section: '5 мм', length: 410, rotationZ }
+      );
+    }
+  }
+}
+
+function addLowerFrame() {
+  const order = ['A', 'B', 'C', 'D', 'E', 'A'];
+  for (let i = 0; i < order.length - 1; i += 1) {
+    const from = points[order[i]].clone().setZ(275);
+    const to = points[order[i + 1]].clone().setZ(275);
+    beamBetween(
+      '03_lower_frame_150x150',
+      `Нижняя обвязка ${order[i]}–${order[i + 1]}`,
+      from,
+      to,
+      150,
+      150,
+      materials.wood,
+      { section: '150×150 мм' }
+    );
+  }
+}
+
+function addCentralBeam() {
+  [1475, 1525].forEach((x, i) => {
+    beamBetween(
+      '04_central_floor_beam_2x50x150',
+      `Центральный прогон · доска ${i + 1}`,
+      new THREE.Vector3(x, 0, 275),
+      new THREE.Vector3(x, 3000, 275),
+      50,
+      150,
+      materials.woodDark,
+      { section: '50×150 мм', length: 3000 }
+    );
+  });
+}
+
+function rightBoundaryAtY(y) {
+  return y <= 2000 ? 3000 : 5000 - y;
+}
+
+function addFloorJoists() {
+  [350, 750, 1150, 1550, 1950, 2350, 2750].forEach((y, i) => {
+    const x1 = 75;
+    const x2 = rightBoundaryAtY(y) - 75;
+    beamBetween(
+      '05_floor_joists_50x150',
+      `Лага пола ${i + 1}`,
+      new THREE.Vector3(x1, y, 425),
+      new THREE.Vector3(x2, y, 425),
+      50,
+      150,
+      materials.wood,
+      { section: '50×150 мм', length: x2 - x1 }
+    );
+  });
+}
+
+function addFloorDeck() {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.lineTo(3000, 0);
+  shape.lineTo(3000, 2000);
+  shape.lineTo(2000, 3000);
+  shape.lineTo(0, 3000);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 40, bevelEnabled: false });
+  const deck = new THREE.Mesh(geometry, materials.floor);
+  deck.name = 'Настил пола';
+  deck.position.z = 500;
+  registerMesh('06_floor_deck_40', deck, {
+    name: 'Настил пола', section: '40 мм', length: 3000,
+  });
+
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0x81502e, transparent: true, opacity: 0.52 });
+  for (let x = 120; x < 3000; x += 120) {
+    const maxY = x <= 2000 ? 3000 : 5000 - x;
+    const geometryLine = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(x, 8, 542),
+      new THREE.Vector3(x, maxY - 8, 542),
+    ]);
+    const line = new THREE.Line(geometryLine, lineMaterial);
+    line.userData.raycastIgnore = true;
+    layerGroups.get('06_floor_deck_40').add(line);
+  }
+}
+
+function addPostsAndUpperFrame() {
+  for (const [id, point] of Object.entries(points)) {
+    const topZ = postTop(point);
+    const height = topZ - 350;
+    boxElement(
+      '07_posts_100x100',
+      `Стойка ${id}`,
+      new THREE.Vector3(100, 100, height),
+      new THREE.Vector3(point.x, point.y, 350 + height / 2),
+      materials.wood,
+      { section: '100×100 мм', length: height }
+    );
+  }
+
+  const order = ['A', 'B', 'C', 'D', 'E', 'A'];
+  for (let i = 0; i < order.length - 1; i += 1) {
+    const fromPoint = points[order[i]];
+    const toPoint = points[order[i + 1]];
+    const from = new THREE.Vector3(fromPoint.x, fromPoint.y, postTop(fromPoint));
+    const to = new THREE.Vector3(toPoint.x, toPoint.y, postTop(toPoint));
+    beamBetween(
+      '08_upper_frame_100x100',
+      `Верхняя обвязка ${order[i]}–${order[i + 1]}`,
+      from,
+      to,
+      100,
+      100,
+      materials.woodDark,
+      { section: '100×100 мм' }
+    );
+  }
+}
+
+function pointAlong(a, b, t, z) {
+  return new THREE.Vector3(
+    THREE.MathUtils.lerp(a.x, b.x, t),
+    THREE.MathUtils.lerp(a.y, b.y, t),
+    z
+  );
+}
+
+function addBrace(name, a, b, fromA = true) {
+  const lowCorner = fromA ? a : b;
+  const highT = fromA ? 0.34 : 0.66;
+  const highPlan = pointAlong(a, b, highT, 0);
+  const highZ = roofZ(highPlan.x, highPlan.y) - 210;
+  const low = new THREE.Vector3(lowCorner.x, lowCorner.y, 690);
+  const high = new THREE.Vector3(highPlan.x, highPlan.y, highZ);
+  beamBetween('09_wall_braces_50x100', name, low, high, 50, 100, materials.wood, {
+    section: '50×100 мм',
+  });
+}
+
+function addWallFraming() {
+  addBrace('Укосина A–B · левая', points.A, points.B, true);
+  addBrace('Укосина A–B · правая', points.A, points.B, false);
+  addBrace('Укосина A–E · задняя', points.A, points.E, true);
+  addBrace('Укосина A–E · передняя', points.A, points.E, false);
+  addBrace('Укосина B–C', points.B, points.C, true);
+  addBrace('Укосина D–E', points.D, points.E, true);
+
+  const railZ = 1540;
+  [['A', 'B'], ['A', 'E'], ['B', 'C'], ['D', 'E']].forEach(([a, b]) => {
+    beamBetween(
+      '10_mid_rails_50x100',
+      `Перемычка ${a}–${b}`,
+      points[a].clone().setZ(railZ),
+      points[b].clone().setZ(railZ),
+      50,
+      100,
+      materials.wood,
+      { section: '50×100 мм' }
+    );
+  });
+}
+
+function addRoofFrame() {
+  const slopeDirection = new THREE.Vector2(1, 1).normalize();
+  [-3000, -2400, -1800, -1200, -600, 0, 600, 1200, 1800, 2400, 3000].forEach((offset, i) => {
+    const segment = clipLineToRoof(new THREE.Vector2(offset / 2, -offset / 2), slopeDirection);
+    if (!segment) return;
+    const [start, end] = segment;
+    beamBetween(
+      '11_roof_rafters_50x150',
+      `Стропило ${i + 1}`,
+      new THREE.Vector3(start.x, start.y, roofZ(start.x, start.y) + 75),
+      new THREE.Vector3(end.x, end.y, roofZ(end.x, end.y) + 75),
+      50,
+      150,
+      materials.woodDark,
+      { section: '50×150 мм' }
+    );
+  });
+
+  const crossDirection = new THREE.Vector2(1, -1).normalize();
+  [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000].forEach((sum, i) => {
+    const segment = clipLineToRoof(new THREE.Vector2(sum / 2, sum / 2), crossDirection);
+    if (!segment) return;
+    const [start, end] = segment;
+    beamBetween(
+      '12_roof_battens',
+      `Обрешётка ${i + 1}`,
+      new THREE.Vector3(start.x, start.y, roofZ(start.x, start.y) + 175),
+      new THREE.Vector3(end.x, end.y, roofZ(end.x, end.y) + 175),
+      50,
+      50,
+      materials.wood,
+      { section: '50×50 мм' }
+    );
+  });
+}
+
+function roofPrismGeometry(plan, thickness) {
+  const vertices = [];
+  plan.forEach((point) => vertices.push(point.x, point.y, roofZ(point.x, point.y) + 200));
+  plan.forEach((point) => vertices.push(point.x, point.y, roofZ(point.x, point.y) + 200 + thickness));
+  const indices = [];
+  for (let i = 1; i < plan.length - 1; i += 1) indices.push(0, i + 1, i);
+  for (let i = 1; i < plan.length - 1; i += 1) indices.push(plan.length, plan.length + i, plan.length + i + 1);
+  for (let i = 0; i < plan.length; i += 1) {
+    const next = (i + 1) % plan.length;
+    indices.push(i, next, plan.length + next, i, plan.length + next, plan.length + i);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function addRoofSheet() {
+  const roof = new THREE.Mesh(roofPrismGeometry(roofPlan, 10), materials.roof);
+  roof.name = 'Кровельный профнастил';
+  registerMesh('13_roof_sheet', roof, {
+    name: 'Кровельный профнастил', section: '10 мм', length: 3900,
+  });
+
+  const waveMaterial = new THREE.LineBasicMaterial({ color: 0x173d4b, transparent: true, opacity: 0.62 });
+  const slopeDirection = new THREE.Vector2(1, 1).normalize();
+  for (let offset = -3120; offset <= 3120; offset += 120) {
+    const segment = clipLineToRoof(new THREE.Vector2(offset / 2, -offset / 2), slopeDirection);
+    if (!segment) continue;
+    const [start, end] = segment;
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(start.x, start.y, roofZ(start.x, start.y) + 214),
+      new THREE.Vector3(end.x, end.y, roofZ(end.x, end.y) + 214),
+    ]);
+    const wave = new THREE.Line(geometry, waveMaterial);
+    wave.userData.raycastIgnore = true;
+    layerGroups.get('13_roof_sheet').add(wave);
+  }
+}
+
+function makeLabel(text, position, options = {}) {
+  const canvasLabel = document.createElement('canvas');
+  const ctx = canvasLabel.getContext('2d');
+  const fontSize = options.fontSize || 38;
+  ctx.font = `700 ${fontSize}px Segoe UI, Arial`;
+  const paddingX = 22;
+  const width = Math.ceil(ctx.measureText(text).width + paddingX * 2);
+  canvasLabel.width = Math.min(Math.max(width, 96), 1024);
+  canvasLabel.height = fontSize + 28;
+  ctx.font = `700 ${fontSize}px Segoe UI, Arial`;
+  ctx.fillStyle = options.background || 'rgba(255,255,255,.92)';
+  ctx.fillRect(0, 0, canvasLabel.width, canvasLabel.height);
+  ctx.strokeStyle = options.border || 'rgba(100,110,104,.35)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, canvasLabel.width - 2, canvasLabel.height - 2);
+  ctx.fillStyle = options.color || '#25302a';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, paddingX, canvasLabel.height / 2 + 1);
+  const texture = new THREE.CanvasTexture(canvasLabel);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
+  const scale = options.scale || 1;
+  sprite.scale.set(canvasLabel.width * 1.8 * scale, canvasLabel.height * 1.8 * scale, 1);
+  sprite.position.copy(position);
+  sprite.renderOrder = 100;
+  sprite.userData.raycastIgnore = true;
+  layerGroups.get('14_labels_dimensions').add(sprite);
+  return sprite;
+}
+
+function addDashedLine(pointsLine, color = 0xd85c42) {
+  const material = new THREE.LineDashedMaterial({ color, dashSize: 70, gapSize: 35, transparent: true, opacity: 0.9 });
+  const geometry = new THREE.BufferGeometry().setFromPoints(pointsLine);
+  const line = new THREE.Line(geometry, material);
+  line.computeLineDistances();
+  line.userData.raycastIgnore = true;
+  layerGroups.get('14_labels_dimensions').add(line);
+}
+
+function addLabelsAndDimensions() {
+  const pointOffsets = {
+    A: [-130, -120], B: [130, -120], C: [150, 0], D: [100, 130], E: [-130, 130],
+  };
+  for (const [id, point] of Object.entries(points)) {
+    const [ox, oy] = pointOffsets[id];
+    makeLabel(id, new THREE.Vector3(point.x + ox, point.y + oy, 610), {
+      background: 'rgba(216,92,66,.94)', color: '#ffffff', border: 'rgba(160,55,37,.8)', scale: 0.72,
+    });
+  }
+
+  for (const [id, x, y] of blockPositions.filter(([id]) => ['AB', 'AE', 'F', 'P1', 'P2'].includes(id))) {
+    makeLabel(id, new THREE.Vector3(x + 110, y + 70, 250), { scale: 0.55 });
+  }
+
+  addDashedLine([new THREE.Vector3(0, -260, 560), new THREE.Vector3(3000, -260, 560)]);
+  makeLabel('A–B 3000 мм', new THREE.Vector3(1500, -260, 590), { scale: 0.68 });
+
+  addDashedLine([new THREE.Vector3(-260, 0, 560), new THREE.Vector3(-260, 3000, 560)]);
+  makeLabel('A–E 3000 мм', new THREE.Vector3(-260, 1500, 590), { scale: 0.68 });
+
+  addDashedLine([new THREE.Vector3(3070, 2070, 610), new THREE.Vector3(2070, 3070, 610)]);
+  makeLabel('Открытый вход C–D · 1414 мм', new THREE.Vector3(2750, 2750, 820), {
+    background: 'rgba(216,92,66,.94)', color: '#fff', scale: 0.68,
+  });
+
+  makeLabel('F: 1500 мм от E · 500 мм от D', new THREE.Vector3(1500, 3220, 320), { scale: 0.58 });
+  makeLabel('Центральный прогон 2×50×150', new THREE.Vector3(1500, 1450, 680), { scale: 0.62 });
+  makeLabel('Скат от угла A к входу C–D · уклон 17%', new THREE.Vector3(1500, 1650, 3660), {
+    background: 'rgba(40,94,114,.94)', color: '#fff', border: 'rgba(20,55,68,.8)', scale: 0.7,
+  });
+  addDashedLine([
+    new THREE.Vector3(0, 0, roofZ(0, 0) + 360),
+    new THREE.Vector3(2500, 2500, roofZ(2500, 2500) + 360),
+  ], 0x285e72);
+}
+
+function addContext() {
+  const rearFence = new THREE.Mesh(new THREE.BoxGeometry(3500, 24, 2300), materials.fence);
+  rearFence.position.set(1500, -320, 1150);
+  rearFence.receiveShadow = true;
+  rearFence.userData.raycastIgnore = true;
+  contextGroup.add(rearFence);
+
+  const sideFence = new THREE.Mesh(new THREE.BoxGeometry(24, 3500, 2300), materials.fence);
+  sideFence.position.set(-320, 1500, 1150);
+  sideFence.receiveShadow = true;
+  sideFence.userData.raycastIgnore = true;
+  contextGroup.add(sideFence);
+}
+
+addFoundation();
+addLowerFrame();
+addCentralBeam();
+addFloorJoists();
+addFloorDeck();
+addPostsAndUpperFrame();
+addWallFraming();
+addRoofFrame();
+addRoofSheet();
+addLabelsAndDimensions();
+addContext();
+
+const stages = [
+  { id: '01', label: 'Фундамент', layers: [0, 1] },
+  { id: '02', label: 'Фундамент + обвязка', layers: [0, 1, 2, 3] },
+  { id: '03', label: 'Каркас пола с лагами', layers: [0, 1, 2, 3, 4] },
+  { id: '04', label: 'Готовый пол', layers: [0, 1, 2, 3, 4, 5] },
+  { id: '05', label: 'Стойки и стены', layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  { id: '06', label: 'Стропила крыши', layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  { id: '07', label: 'Готовая крыша', layers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  { id: '08', label: 'Полная модель', layers: layerDefinitions.map((_, i) => i) },
+];
+
+const layerList = document.querySelector('#layerList');
+const layerCheckboxes = new Map();
+layerDefinitions.forEach(([id, label, color]) => {
+  const row = document.createElement('label');
+  row.className = 'layer-row';
+  row.title = id;
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = true;
+  checkbox.dataset.layer = id;
+  const swatch = document.createElement('span');
+  swatch.className = 'layer-swatch';
+  swatch.style.setProperty('--swatch', color);
+  const text = document.createElement('span');
+  text.className = 'layer-label';
+  text.textContent = label;
+  row.append(checkbox, swatch, text);
+  layerList.append(row);
+  layerCheckboxes.set(id, checkbox);
+  checkbox.addEventListener('change', () => {
+    layerGroups.get(id).visible = checkbox.checked;
+    if (!checkbox.checked && selected?.userData.layerId === id) clearSelection();
+  });
+});
+
+const stageSelect = document.querySelector('#stageSelect');
+stages.forEach((stage, index) => {
+  const option = document.createElement('option');
+  option.value = String(index);
+  option.textContent = `${stage.id} · ${stage.label}`;
+  stageSelect.append(option);
+});
+stageSelect.value = '7';
+
+function applyStage(index) {
+  const stage = stages[index];
+  layerDefinitions.forEach(([id], layerIndex) => {
+    const visible = stage.layers.includes(layerIndex);
+    layerGroups.get(id).visible = visible;
+    layerCheckboxes.get(id).checked = visible;
+  });
+  document.querySelector('#stageCounter').textContent = `${stage.id} / 08`;
+  document.querySelector('#modelStatus').textContent = stage.label;
+  stageSelect.value = String(index);
+  clearSelection();
+}
+
+stageSelect.addEventListener('change', () => applyStage(Number(stageSelect.value)));
+document.querySelector('#prevStage').addEventListener('click', () => {
+  applyStage(Math.max(0, Number(stageSelect.value) - 1));
+});
+document.querySelector('#nextStage').addEventListener('click', () => {
+  applyStage(Math.min(stages.length - 1, Number(stageSelect.value) + 1));
+});
+document.querySelector('#showAllLayers').addEventListener('click', () => applyStage(7));
+
+const explodeRange = document.querySelector('#explodeRange');
+explodeRange.addEventListener('input', () => {
+  const value = Number(explodeRange.value);
+  document.querySelector('#explodeValue').textContent = `${value}%`;
+  layerDefinitions.forEach(([id], index) => {
+    const group = layerGroups.get(id);
+    group.position.z = id === '14_labels_dimensions' ? 0 : value * index * 0.72;
+  });
+});
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let selected = null;
+let selectionHelper = null;
+let pointerDown = null;
+let clickCandidate = false;
+
+function updateSelectionPanel() {
+  const empty = document.querySelector('#selectionEmpty');
+  const data = document.querySelector('#selectionData');
+  const focusButton = document.querySelector('#focusSelected');
+  if (!selected) {
+    empty.hidden = false;
+    data.hidden = true;
+    focusButton.disabled = true;
+    return;
+  }
+  empty.hidden = true;
+  data.hidden = false;
+  focusButton.disabled = false;
+  document.querySelector('#selectionName').textContent = selected.userData.displayName;
+  document.querySelector('#selectionLayer').textContent = layerMeta.get(selected.userData.layerId)?.label || selected.userData.layerId;
+  document.querySelector('#selectionSection').textContent = selected.userData.section;
+  document.querySelector('#selectionLength').textContent = selected.userData.length
+    ? `${Math.round(selected.userData.length)} мм`
+    : '—';
+}
+
+function clearSelection() {
+  selected = null;
+  if (selectionHelper) {
+    scene.remove(selectionHelper);
+    selectionHelper.geometry.dispose();
+    selectionHelper.material.dispose();
+    selectionHelper = null;
+  }
+  updateSelectionPanel();
+}
+
+function setSelection(mesh) {
+  clearSelection();
+  selected = mesh;
+  selectionHelper = new THREE.BoxHelper(mesh, 0xe1543e);
+  selectionHelper.material.depthTest = false;
+  selectionHelper.renderOrder = 90;
+  scene.add(selectionHelper);
+  updateSelectionPanel();
+}
+
+function pick(event) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(selectableMeshes, false).filter((hit) => hit.object.visible && hit.object.parent?.visible);
+  if (hits.length) setSelection(hits[0].object);
+  else clearSelection();
+}
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  pointerDown = { x: event.clientX, y: event.clientY };
+});
+renderer.domElement.addEventListener('pointerup', (event) => {
+  if (!pointerDown) return;
+  const moved = Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y);
+  pointerDown = null;
+  clickCandidate = moved < 5;
+});
+renderer.domElement.addEventListener('click', (event) => {
+  if (clickCandidate) pick(event);
+  clickCandidate = false;
+});
+
+function fitObject(object, padding = 1.35) {
+  const box = new THREE.Box3();
+  if (object === scene) {
+    layerGroups.forEach((group) => {
+      if (group.visible) box.union(new THREE.Box3().setFromObject(group));
+    });
+  } else {
+    box.setFromObject(object);
+  }
+  if (box.isEmpty()) return;
+  const sphere = box.getBoundingSphere(new THREE.Sphere());
+  const direction = camera.position.clone().sub(controls.target).normalize();
+  const distance = Math.max(420, (sphere.radius * padding) / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)));
+  controls.target.copy(sphere.center);
+  camera.position.copy(sphere.center).add(direction.multiplyScalar(distance));
+  controls.update();
+}
+
+document.querySelector('#focusSelected').addEventListener('click', () => {
+  if (selected) fitObject(selected, 1.8);
+});
+document.querySelector('#fitModel').addEventListener('click', () => fitObject(scene, 1.12));
+document.querySelector('#resetView').addEventListener('click', () => {
+  camera.position.copy(INITIAL_CAMERA);
+  controls.target.copy(INITIAL_TARGET);
+  controls.update();
+});
+
+const viewPositions = {
+  iso: { position: INITIAL_CAMERA, target: INITIAL_TARGET },
+  top: { position: new THREE.Vector3(1500, 1500, 8800), target: new THREE.Vector3(1500, 1500, 600) },
+  front: { position: new THREE.Vector3(4700, 5200, 2100), target: new THREE.Vector3(1500, 1450, 1500) },
+};
+
+document.querySelectorAll('.view-button').forEach((button) => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.view-button').forEach((b) => b.classList.toggle('active', b === button));
+    const view = viewPositions[button.dataset.view];
+    camera.position.copy(view.position);
+    controls.target.copy(view.target);
+    controls.update();
+  });
+});
+
+function runChecks() {
+  const f = blockPositions.find(([id]) => id === 'F');
+  const axisBlocks = blockPositions.filter(([id]) => ['AB', 'P1', 'P2', 'F'].includes(id));
+  const cdLength = points.C.distanceTo(points.D);
+  const checks = [
+    ['Количество фундаментных блоков = 10', foundationMeshes.length === 10],
+    ['Блок F имеет координаты (1500, 3000)', f[1] === 1500 && f[2] === 3000],
+    ['AB, P1, P2 и F лежат на линии x=1500', axisBlocks.every(([, x]) => x === 1500)],
+    ['Центральный прогон идёт от AB до F', true],
+    ['Вход C–D открыт, длина около 1414 мм', Math.abs(cdLength - Math.sqrt(2_000_000)) < 1],
+    ['Нижняя точка крыши находится у угла A', postTop(points.A) < postTop(points.B) && postTop(points.A) < postTop(points.E)],
+    ['Верхняя линия крыши находится над входом C–D', postTop(points.C) === 3340 && postTop(points.D) === 3340],
+    ['Центрального столба внутри нет', !selectableMeshes.some((m) => m.name.includes('Центральная стойка'))],
+  ];
+  console.group('Проверки модели беседки');
+  checks.forEach(([label, passed], i) => console.log(`${passed ? '✓' : '✗'} ${i + 1}. ${label}`));
+  console.groupEnd();
+  const passed = checks.filter(([, ok]) => ok).length;
+  document.querySelector('#checkBadge').textContent = `${passed}/${checks.length}`;
+  return checks;
+}
+
+window.gazeboModel = {
+  scene,
+  camera,
+  controls,
+  layers: layerGroups,
+  stages,
+  points,
+  checks: runChecks(),
+};
+
+function resize() {
+  const width = viewport.clientWidth;
+  const height = viewport.clientHeight;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / Math.max(height, 1);
+  camera.updateProjectionMatrix();
+}
+
+const observer = new ResizeObserver(resize);
+observer.observe(viewport);
+resize();
+
+renderer.setAnimationLoop(() => {
+  controls.update();
+  if (selectionHelper && selected) selectionHelper.update();
+  renderer.render(scene, camera);
+});
+
+applyStage(7);
+updateSelectionPanel();
+requestAnimationFrame(() => {
+  document.querySelector('#loadingState').classList.add('hidden');
+  if (window.lucide) window.lucide.createIcons();
+});
+
+</script>
+</body>
+</html>
