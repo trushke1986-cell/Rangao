@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Угловая беседка — полный 3D-макет строительства</title>
+  <meta name="description" content="Интерактивная модель угловой деревянной беседки: от основания и пола до стен, стропил и готовой кровли.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23b87542' d='M6 30 32 10l26 20-5 6-5-4v22H16V32l-5 4z'/%3E%3Cpath fill='%23285e72' d='M4 29 32 7l28 22-5 6-23-18L9 35z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Параметры модели">
+      <header class="project-header">
+        <div>
+          <p class="eyebrow">Модель 1:1 · миллиметры</p>
+          <h1>Угловая беседка</h1>
+          <p class="subtitle">Полный этап: пол, стены и кровля</p>
+        </div>
+        <span class="check-badge" id="checkBadge" title="Автоматические проверки">0/15</span>
+      </header>
+
+      <div class="safety-banner" role="note">
+        <i data-lucide="shield-alert" aria-hidden="true"></i>
+        <p><strong>Учебный макет.</strong> Силовые узлы и нагрузки необходимо подтвердить у инженера до закупки крепежа.</p>
+      </div>
+
+      <section class="panel-section stage-band" aria-labelledby="stageTitle">
+        <div class="section-heading">
+          <h2 id="stageTitle">Этап строительства</h2>
+          <span id="stageCounter">18 / 18</span>
+        </div>
+        <div class="stage-control">
+          <button class="icon-button" id="prevStage" type="button" title="Предыдущий этап" aria-label="Предыдущий этап">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <select id="stageSelect" aria-label="Этап строительства"></select>
+          <button class="icon-button" id="nextStage" type="button" title="Следующий этап" aria-label="Следующий этап">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel-section layers-band" aria-labelledby="layersTitle">
+        <div class="section-heading">
+          <h2 id="layersTitle">Слои модели</h2>
+          <div class="heading-actions">
+            <button class="text-button" id="hideAllLayers" type="button">Скрыть</button>
+            <button class="text-button" id="showAllLayers" type="button">Все</button>
+          </div>
+        </div>
+        <div class="layer-list" id="layerList"></div>
+      </section>
+
+      <section class="panel-section inspect-band" aria-labelledby="inspectTitle">
+        <div class="section-heading">
+          <h2 id="inspectTitle">Выбранный элемент</h2>
+          <button class="icon-button small" id="focusSelected" type="button" title="Приблизить выбранное" aria-label="Приблизить выбранное" disabled>
+            <i data-lucide="scan"></i>
+          </button>
+        </div>
+        <div class="selection-empty" id="selectionEmpty">Щёлкните по детали или крепежу</div>
+        <dl class="selection-data" id="selectionData" hidden>
+          <div><dt>ID</dt><dd id="selectionId"></dd></div>
+          <div><dt>Название</dt><dd id="selectionName"></dd></div>
+          <div><dt>Слой</dt><dd id="selectionLayer"></dd></div>
+          <div><dt>Сечение</dt><dd id="selectionSection"></dd></div>
+          <div><dt>Длина</dt><dd id="selectionLength"></dd></div>
+        </dl>
+      </section>
+
+      <section class="panel-section joint-card" aria-labelledby="jointTitle">
+        <div class="section-heading">
+          <h2 id="jointTitle">Узел крепления</h2>
+          <button class="toggle-button" id="drillToggle" type="button" aria-pressed="false">
+            <i data-lucide="circle-dashed"></i>
+            Отверстия
+          </button>
+        </div>
+        <p class="selection-empty" id="jointEmpty">Выберите крепёж или узел</p>
+        <div id="jointData" hidden>
+          <div class="joint-status-row">
+            <span class="verification-badge verification-engineer-check" id="jointVerification">Требуется проверка</span>
+          </div>
+          <dl class="selection-data joint-data-list">
+            <div><dt>Узел</dt><dd id="jointName"></dd></div>
+            <div><dt>Крепёж</dt><dd id="jointFastener"></dd></div>
+            <div><dt>Количество</dt><dd id="jointQuantity"></dd></div>
+            <div><dt>Сверло</dt><dd id="jointBit"></dd></div>
+            <div><dt>Глубина</dt><dd id="jointDepth"></dd></div>
+            <div><dt>Отступы</dt><dd id="jointEdges"></dd></div>
+          </dl>
+          <p class="danger-note" id="jointWarning"></p>
+          <a class="guide-link" id="guideLink" href="../Руководство_по_строительству_угловой_беседки.docx">
+            <i data-lucide="book-open"></i>
+            Открыть руководство
+          </a>
+        </div>
+      </section>
+
+      <section class="panel-section explode-band" aria-labelledby="explodeTitle">
+        <div class="section-heading">
+          <h2 id="explodeTitle">Разнесение конструкции</h2>
+          <output id="explodeValue">0%</output>
+        </div>
+        <input id="explodeRange" type="range" min="0" max="100" value="0" step="1" aria-label="Разнесение конструкции">
+      </section>
+    </aside>
+
+    <main class="viewport" id="viewport">
+      <div class="viewer-toolbar" role="toolbar" aria-label="Виды камеры">
+        <div class="segmented-control" id="viewButtons">
+          <button class="view-button active" type="button" data-view="iso">3D</button>
+          <button class="view-button" type="button" data-view="top">Сверху</button>
+          <button class="view-button" type="button" data-view="front">Фасад</button>
+          <button class="view-button" type="button" data-view="joint">Узел</button>
+        </div>
+        <div class="toolbar-actions">
+          <button class="icon-button light" id="fitModel" type="button" title="Показать всю модель" aria-label="Показать всю модель"><i data-lucide="maximize"></i></button>
+          <button class="icon-button light" id="resetView" type="button" title="Исходный вид" aria-label="Исходный вид"><i data-lucide="home"></i></button>
+        </div>
+      </div>
+
+      <div class="model-status" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="modelStatus">Полная модель</span>
+      </div>
+
+      <div class="loading-state" id="loadingState">
+        <span class="loading-mark"></span>
+        <span>Сборка модели</span>
+      </div>
+
+      <canvas id="modelCanvas" aria-label="Интерактивная 3D-модель полного строительства угловой беседки"></canvas>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
